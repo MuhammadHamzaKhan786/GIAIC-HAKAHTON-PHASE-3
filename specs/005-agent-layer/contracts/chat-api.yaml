@@ -1,0 +1,93 @@
+# API Contract: Chat Endpoint
+
+## POST /api/chat
+
+Handles conversational AI interactions with persistence.
+
+### Request
+
+```
+POST /api/chat
+Authorization: Bearer {JWT_TOKEN}
+Content-Type: application/json
+```
+
+**Body**:
+```json
+{
+  "conversation_id": "string (optional)",
+  "message": "string (required)"
+}
+```
+
+**Parameters**:
+- `conversation_id` (optional): UUID of existing conversation; if omitted, new conversation is created
+- `message` (required): Natural language user input
+
+### Response
+
+**Success** (200 OK):
+```json
+{
+  "conversation_id": "string (UUID)",
+  "response": "string (AI-generated response)",
+  "tool_calls": [
+    {
+      "name": "string (tool name)",
+      "arguments": "object (tool arguments)",
+      "result": "object (tool execution result)"
+    }
+  ],
+  "error": "string (optional, only if tool call failed)"
+}
+```
+
+**Authentication Error** (401 Unauthorized):
+```json
+{
+  "error": "Invalid or missing authentication token"
+}
+```
+
+**Validation Error** (400 Bad Request):
+```json
+{
+  "error": "string (validation error message)"
+}
+```
+
+### Authentication & Authorization
+
+- JWT token required in Authorization header
+- Token must contain valid user_id
+- All operations scoped to authenticated user's data
+- Conversation access limited to owning user
+
+### Behavior
+
+1. **Validate JWT**: Extract user_id from token
+2. **Load/Create Conversation**:
+   - If conversation_id provided: load existing conversation for user
+   - If conversation_id omitted: create new conversation for user
+3. **Verify Ownership**: Ensure conversation belongs to user_id
+4. **Store User Message**: Save message to database with role="user"
+5. **Build Context**: Fetch all messages in conversation chronologically
+6. **Run Agent**: Execute OpenAI Agent with message history and MCP tools
+7. **Process Tool Calls**: Execute MCP tools as directed by agent
+8. **Store Assistant Response**: Save agent response to database with role="assistant"
+9. **Return Response**: Include conversation_id, AI response, and tool call details
+
+### Error Handling
+
+- Invalid JWT: Return 401 Unauthorized
+- Conversation not owned by user: Return 404 Not Found
+- Malformed request: Return 400 Bad Request
+- MCP tool failure: Log error, return user-friendly message
+- Agent processing error: Return 500 Internal Server Error with generic message
+
+### Security Considerations
+
+- All data access filtered by user_id from JWT
+- Conversation isolation enforced at database level
+- No cross-conversation data leakage
+- Input validation on message content

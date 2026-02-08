@@ -1,0 +1,1 @@
+from backend.src.auth.router import router

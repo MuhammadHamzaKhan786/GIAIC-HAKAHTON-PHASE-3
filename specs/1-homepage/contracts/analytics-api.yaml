@@ -1,0 +1,115 @@
+# API Contract: Homepage Analytics
+
+**Feature**: Todo CLI – Modern Homepage
+**Version**: 1.0.0
+**Date**: 2026-01-30
+
+## Overview
+
+This API contract defines the endpoints for collecting analytics data related to the Todo CLI homepage. These endpoints would be used to track user interactions and measure success criteria defined in the feature specification.
+
+## Base URL
+
+```
+https://api.todo-cli.example.com/v1
+```
+
+## Endpoints
+
+### Track Homepage Event
+
+Track user interactions on the homepage to measure engagement and success metrics.
+
+```
+POST /analytics/events
+```
+
+#### Headers
+
+```
+Content-Type: application/json
+Authorization: Bearer {jwt_token}  # Optional for logged-in users
+```
+
+#### Request Body
+
+```json
+{
+  "event_type": "cta_click",
+  "event_data": {
+    "element_id": "get-started-button",
+    "element_text": "Get Started",
+    "page_section": "hero",
+    "timestamp": "2026-01-30T10:30:00Z"
+  },
+  "user_context": {
+    "user_id": "optional_user_id_if_logged_in",
+    "session_id": "unique_session_identifier",
+    "device_info": {
+      "screen_width": 1920,
+      "screen_height": 1080,
+      "device_type": "desktop|tablet|mobile",
+      "browser": "Chrome",
+      "os": "Windows"
+    },
+    "referrer": "https://google.com"
+  }
+}
+```
+
+#### Response
+
+**Success Response (200 OK)**:
+```json
+{
+  "status": "success",
+  "event_id": "unique_event_identifier",
+  "timestamp": "2026-01-30T10:30:00Z"
+}
+```
+
+**Validation Error Response (400 Bad Request)**:
+```json
+{
+  "status": "error",
+  "message": "Invalid request format",
+  "errors": [
+    {
+      "field": "event_type",
+      "message": "Event type is required and must be one of the allowed values"
+    }
+  ]
+}
+```
+
+#### Event Types
+
+Valid `event_type` values:
+- `page_view`: User viewed the homepage
+- `cta_click`: User clicked on a CTA button
+- `feature_card_interaction`: User interacted with a feature card
+- `scroll_depth`: User scrolled to certain percentages of the page
+
+#### Element IDs
+
+Valid `element_id` values for tracking:
+- `hero-section`
+- `get-started-button`
+- `sign-in-button`
+- `feature-card-{id}`
+- `footer`
+
+## Authentication
+
+Most analytics events can be tracked without authentication, but for logged-in users, the JWT token should be included to associate events with specific users.
+
+## Rate Limiting
+
+Requests are limited to 100 per minute per IP address to prevent abuse.
+
+## Success Metrics Collection
+
+This endpoint enables collection of metrics defined in the success criteria:
+- SC-004: CTA button click-through rates
+- SC-006: Device-specific experience metrics
+- SC-007: Accessibility usage patterns

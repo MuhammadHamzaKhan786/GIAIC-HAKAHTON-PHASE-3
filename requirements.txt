@@ -1,0 +1,7 @@
+# Project requirements
+openai>=1.0.0
+fastapi>=0.100.0
+sqlmodel>=0.0.8
+uvicorn>=0.20.0
+psycopg2-binary>=2.9.0
+better-auth>=0.0.1b11
